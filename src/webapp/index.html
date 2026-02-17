@@ -3,475 +3,427 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>话术演练场 - AI 陪练助手</title>
+    <title>话术演练场</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        * { font-family: 'Inter', sans-serif; }
+        .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
         }
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            min-height: 100vh;
-            background: #f5f5f5;
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
+        .message-bubble {
+            animation: fadeIn 0.3s ease-out;
         }
-        .header h1 { font-size: 24px; margin-bottom: 8px; }
-        .header p { opacity: 0.9; font-size: 14px; }
-        
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            background: white;
-            padding: 15px;
-            margin: 10px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .stat-item { text-align: center; }
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
+        .pulse-ring {
+            animation: pulse 2s infinite;
         }
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
         }
-        
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin: 20px 15px 10px;
-            color: #333;
+        .slide-up {
+            animation: slideUp 0.4s ease-out;
         }
-        
-        .scene-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            padding: 0 15px;
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
         }
-        .scene-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.2s;
+        .typing-dot {
+            animation: typing 1.4s infinite;
         }
-        .scene-card:hover { transform: translateY(-2px); }
-        .scene-card .icon {
-            font-size: 32px;
-            margin-bottom: 8px;
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
         }
-        .scene-card .title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-        }
-        .scene-card .desc {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
-        .scene-card .difficulty {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            margin-top: 8px;
-        }
-        .difficulty-easy { background: #d4edda; color: #155724; }
-        .difficulty-medium { background: #fff3cd; color: #856404; }
-        .difficulty-hard { background: #f8d7da; color: #721c24; }
-        
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            padding: 0 15px;
-            margin-top: 15px;
-        }
-        .action-btn {
-            flex: 1;
-            background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
-            padding: 12px;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .action-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-        .action-btn.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-        }
-        
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-        .nav-item {
-            text-align: center;
-            color: #666;
-            cursor: pointer;
-            padding: 5px 20px;
-        }
-        .nav-item.active { color: #667eea; }
-        .nav-item .icon { font-size: 24px; }
-        .nav-item .label { font-size: 12px; margin-top: 2px; }
-        
-        .content-area { padding-bottom: 80px; }
-        
-        /* 对话页面 */
-        .chat-page { display: none; }
-        .chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-        }
-        .chat-header .back { margin-right: 15px; cursor: pointer; }
-        .chat-header .info { flex: 1; }
-        .chat-header .name { font-weight: 600; }
-        .chat-header .status { font-size: 12px; opacity: 0.8; }
-        
-        .chat-messages {
-            padding: 20px 15px;
-            min-height: calc(100vh - 200px);
-            background: #f5f5f5;
-        }
-        .message {
-            display: flex;
-            margin-bottom: 15px;
-        }
-        .message.user { flex-direction: row-reverse; }
-        .message-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin: 0 10px;
-        }
-        .message.user .message-avatar { background: #667eea; }
-        .message-content {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        .message.ai .message-content {
-            background: white;
-            color: #333;
-            border-bottom-left-radius: 4px;
-        }
-        .message.user .message-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-        
-        .chat-input-area {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            background: white;
-            padding: 15px;
-            display: flex;
-            gap: 10px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-        .chat-input {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            padding: 12px 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        .chat-input:focus { border-color: #667eea; }
-        .send-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        
-        /* 报告页面 */
-        .report-page { display: none; }
-        .score-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 30px auto;
-            color: white;
-        }
-        .score-value { font-size: 48px; font-weight: bold; }
-        .score-label { font-size: 14px; opacity: 0.9; }
-        .radar-chart {
-            background: white;
-            margin: 15px;
-            padding: 20px;
-            border-radius: 12px;
-        }
-        .dimension-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .dimension-name { width: 80px; font-size: 14px; }
-        .dimension-bar {
-            flex: 1;
-            height: 8px;
-            background: #eee;
-            border-radius: 4px;
-            margin: 0 10px;
-        }
-        .dimension-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 4px;
-            transition: width 0.5s;
-        }
-        .dimension-score { width: 40px; font-size: 14px; font-weight: 600; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <!-- 首页 -->
-        <div id="home-page" class="page">
-            <div class="header">
-                <h1>话术演练场</h1>
-                <p>AI 陪练助手，让每一次对话都更有信心</p>
-            </div>
-            
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">本周练习</div>
+<body class="bg-gray-50">
+    <!-- App Container -->
+    <div id="app" class="max-w-md mx-auto min-h-screen bg-white shadow-2xl">
+        
+        <!-- Header -->
+        <header class="gradient-bg text-white px-6 py-8">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold">话术演练场</h1>
+                    <p class="text-white/80 text-sm mt-1">AI 陪练助手</p>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value">78</div>
-                    <div class="stat-label">平均得分</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">5</div>
-                    <div class="stat-label">连续天数</div>
+                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-user text-white"></i>
                 </div>
             </div>
             
-            <div class="quick-actions">
-                <button class="action-btn primary" onclick="quickStart()">快速开始</button>
-                <button class="action-btn" onclick="showReport()">查看报告</button>
-            </div>
-            
-            <div class="section-title">选择训练场景</div>
-            <div class="scene-grid">
-                <div class="scene-card" onclick="startScene('玻尿酸')">
-                    <div class="icon">💉</div>
-                    <div class="title">玻尿酸介绍</div>
-                    <div class="desc">医美科 · 基础话术</div>
-                    <span class="difficulty difficulty-easy">简单</span>
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-white/10 rounded-2xl p-4 text-center">
+                    <div class="text-2xl font-bold">12</div>
+                    <div class="text-xs text-white/70">本周练习</div>
                 </div>
-                <div class="scene-card" onclick="startScene('超声炮')">
-                    <div class="icon">🔊</div>
-                    <div class="title">超声炮抗衰</div>
-                    <div class="desc">医美科 · 进阶话术</div>
-                    <span class="difficulty difficulty-medium">中等</span>
+                <div class="bg-white/10 rounded-2xl p-4 text-center">
+                    <div class="text-2xl font-bold">78</div>
+                    <div class="text-xs text-white/70">平均得分</div>
                 </div>
-                <div class="scene-card" onclick="startScene('种植牙')">
-                    <div class="icon">🦷</div>
-                    <div class="title">种植牙咨询</div>
-                    <div class="desc">口腔科 · 专业话术</div>
-                    <span class="difficulty difficulty-hard">困难</span>
-                </div>
-                <div class="scene-card" onclick="startScene('价格异议')">
-                    <div class="icon">💰</div>
-                    <div class="title">价格异议处理</div>
-                    <div class="desc">通用技能 · 你的薄弱点</div>
-                    <span class="difficulty difficulty-medium">中等</span>
+                <div class="bg-white/10 rounded-2xl p-4 text-center">
+                    <div class="text-2xl font-bold">5</div>
+                    <div class="text-xs text-white/70">连续天数</div>
                 </div>
             </div>
-            
-            <div class="content-area"></div>
-            
-            <div class="bottom-nav">
-                <div class="nav-item active" onclick="showPage('home')">
-                    <div class="icon">🏠</div>
-                    <div class="label">首页</div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="px-4 py-6 -mt-4">
+            <!-- Quick Actions -->
+            <div class="flex gap-3 mb-6">
+                <button onclick="quickStart()" class="flex-1 gradient-bg text-white py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+                    <i class="fas fa-play"></i>
+                    快速开始
+                </button>
+                <button onclick="showReport()" class="px-6 bg-white border-2 border-purple-500 text-purple-600 rounded-2xl font-semibold hover:bg-purple-50 transition">
+                    <i class="fas fa-chart-line"></i>
+                </button>
+            </div>
+
+            <!-- Recommended Section -->
+            <section class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-gray-800">推荐训练</h2>
+                    <span class="text-xs bg-orange-100 text-orange-600 px-3 py-1 rounded-full">你的薄弱点</span>
                 </div>
-                <div class="nav-item" onclick="showPage('chat')">
-                    <div class="icon">💬</div>
-                    <div class="label">练习</div>
+                
+                <div class="bg-gradient-to-r from-orange-400 to-pink-500 rounded-2xl p-5 text-white shadow-lg" onclick="startScene('价格异议')">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-xs opacity-80 mb-1">通用技能</div>
+                            <h3 class="font-bold text-lg mb-2">价格异议处理</h3>
+                            <p class="text-sm opacity-90">练习应对"太贵了"、"要对比"等常见异议</p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-tags text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center gap-4 text-sm">
+                        <span><i class="fas fa-star mr-1"></i>4.8</span>
+                        <span><i class="fas fa-clock mr-1"></i>5分钟</span>
+                        <span><i class="fas fa-signal mr-1"></i>中等</span>
+                    </div>
                 </div>
-                <div class="nav-item" onclick="showReport()">
-                    <div class="icon">📊</div>
-                    <div class="label">报告</div>
+            </section>
+
+            <!-- Scene Cards -->
+            <section>
+                <h2 class="font-bold text-gray-800 mb-4">选择场景</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Card 1 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer" onclick="startScene('玻尿酸')">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                            <i class="fas fa-syringe text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">玻尿酸</h3>
+                        <p class="text-xs text-gray-500">医美科 · 基础</p>
+                        <div class="mt-3 flex items-center gap-1">
+                            <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded">简单</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer" onclick="startScene('超声炮')">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+                            <i class="fas fa-broadcast-tower text-purple-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">超声炮</h3>
+                        <p class="text-xs text-gray-500">医美科 · 进阶</p>
+                        <div class="mt-3 flex items-center gap-1">
+                            <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded">中等</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer" onclick="startScene('种植牙')">
+                        <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-3">
+                            <i class="fas fa-tooth text-teal-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">种植牙</h3>
+                        <p class="text-xs text-gray-500">口腔科 · 专业</p>
+                        <div class="mt-3 flex items-center gap-1">
+                            <span class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">困难</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer" onclick="startScene('热玛吉')">
+                        <div class="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-3">
+                            <i class="fas fa-magic text-pink-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">热玛吉</h3>
+                        <p class="text-xs text-gray-500">医美科 · 抗衰</p>
+                        <div class="mt-3 flex items-center gap-1">
+                            <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded">中等</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="nav-item" onclick="showPage('profile')">
-                    <div class="icon">👤</div>
-                    <div class="label">我的</div>
+            </section>
+
+            <!-- Recent Training -->
+            <section class="mt-6">
+                <h2 class="font-bold text-gray-800 mb-4">最近练习</h2>
+                <div class="space-y-3">
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-syringe text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">玻尿酸介绍</h4>
+                                <p class="text-xs text-gray-500">今天 14:30 · 5分钟</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-green-600">82</div>
+                            <div class="text-xs text-gray-400">分</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-broadcast-tower text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800">超声炮抗衰</h4>
+                                <p class="text-xs text-gray-500">昨天 16:20 · 4分钟</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-yellow-600">76</div>
+                            <div class="text-xs text-gray-400">分</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 px-6 py-3">
+            <div class="flex justify-around">
+                <button class="flex flex-col items-center gap-1 text-purple-600">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-xs">首页</span>
+                </button>
+                <button class="flex flex-col items-center gap-1 text-gray-400 hover:text-purple-600" onclick="showChat()">
+                    <i class="fas fa-comments text-xl"></i>
+                    <span class="text-xs">练习</span>
+                </button>
+                <button class="flex flex-col items-center gap-1 text-gray-400 hover:text-purple-600" onclick="showReport()">
+                    <i class="fas fa-chart-pie text-xl"></i>
+                    <span class="text-xs">报告</span>
+                </button>
+                <button class="flex flex-col items-center gap-1 text-gray-400 hover:text-purple-600">
+                    <i class="fas fa-user text-xl"></i>
+                    <span class="text-xs">我的</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Spacer for bottom nav -->
+        <div class="h-20"></div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="fixed inset-0 bg-white z-50 hidden">
+        <!-- Chat Header -->
+        <div class="gradient-bg text-white px-4 py-4 flex items-center gap-4">
+            <button onclick="closeChat()" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="flex-1">
+                <h2 class="font-bold">王女士 · 32岁</h2>
+                <p class="text-sm text-white/80">犹豫型 · 法令纹明显</p>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <i class="fas fa-ellipsis-v"></i>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chat-messages" class="p-4 space-y-4 h-[calc(100vh-180px)] overflow-y-auto bg-gray-50">
+            <!-- Patient Message -->
+            <div class="flex gap-3 message-bubble">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                    王
+                </div>
+                <div class="flex-1">
+                    <div class="bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm">
+                        <p class="text-gray-700">你好，我想咨询一下玻尿酸，这个安全吗？效果能维持多久呢？</p>
+                    </div>
+                    <span class="text-xs text-gray-400 mt-1">14:32</span>
                 </div>
             </div>
         </div>
-        
-        <!-- 对话页面 -->
-        <div id="chat-page" class="page chat-page">
-            <div class="chat-header">
-                <div class="back" onclick="showPage('home')">←</div>
-                <div class="info">
-                    <div class="name">王女士 · 32岁</div>
-                    <div class="status">犹豫型患者 | 想改善法令纹</div>
-                </div>
-            </div>
-            <div class="chat-messages" id="chat-messages">
-                <div class="message ai">
-                    <div class="message-avatar">👩</div>
-                    <div class="message-content">你好，我是王女士，今年32岁。我最近看网上说玻尿酸挺火的，但我不太了解，想先咨询一下。</div>
-                </div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" class="chat-input" id="chat-input" placeholder="输入你的回复..." onkeypress="handleEnter(event)">
-                <button class="send-btn" onclick="sendMessage()">➤</button>
-            </div>
-        </div>
-        
-        <!-- 报告页面 -->
-        <div id="report-page" class="page report-page">
-            <div class="header">
-                <h1>训练报告</h1>
-                <p>近7天能力分析</p>
-            </div>
-            <div class="score-circle">
-                <div class="score-value">78</div>
-                <div class="score-label">综合评分</div>
-            </div>
-            <div class="radar-chart">
-                <div class="dimension-item">
-                    <div class="dimension-name">专业度</div>
-                    <div class="dimension-bar">
-                        <div class="dimension-fill" style="width: 82%"></div>
-                    </div>
-                    <div class="dimension-score">82</div>
-                </div>
-                <div class="dimension-item">
-                    <div class="dimension-name">共情力</div>
-                    <div class="dimension-bar">
-                        <div class="dimension-fill" style="width: 75%"></div>
-                    </div>
-                    <div class="dimension-score">75</div>
-                </div>
-                <div class="dimension-item">
-                    <div class="dimension-name">转化力</div>
-                    <div class="dimension-bar">
-                        <div class="dimension-fill" style="width: 68%"></div>
-                    </div>
-                    <div class="dimension-score">68</div>
-                </div>
-                <div class="dimension-item">
-                    <div class="dimension-name">合规性</div>
-                    <div class="dimension-bar">
-                        <div class="dimension-fill" style="width: 85%"></div>
-                    </div>
-                    <div class="dimension-score">85</div>
-                </div>
-            </div>
-            <div class="content-area"></div>
-            <div class="bottom-nav">
-                <div class="nav-item" onclick="showPage('home')">
-                    <div class="icon">🏠</div>
-                    <div class="label">首页</div>
-                </div>
-                <div class="nav-item" onclick="showPage('chat')">
-                    <div class="icon">💬</div>
-                    <div class="label">练习</div>
-                </div>
-                <div class="nav-item active" onclick="showReport()">
-                    <div class="icon">📊</div>
-                    <div class="label">报告</div>
-                </div>
-                <div class="nav-item" onclick="showPage('profile')">
-                    <div class="icon">👤</div>
-                    <div class="label">我的</div>
-                </div>
+
+        <!-- Chat Input -->
+        <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 p-4">
+            <div class="flex gap-3">
+                <button class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <input type="text" id="chat-input" placeholder="输入你的回复..." 
+                    class="flex-1 bg-gray-100 rounded-full px-5 py-3 outline-none focus:ring-2 focus:ring-purple-500"
+                    onkeypress="handleEnter(event)">
+                <button onclick="sendMessage()" class="w-12 h-12 rounded-full gradient-bg text-white flex items-center justify-center pulse-ring">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
         </div>
     </div>
-    
+
+    <!-- Report Modal -->
+    <div id="report-modal" class="fixed inset-0 bg-gray-50 z-50 hidden overflow-y-auto">
+        <!-- Header -->
+        <div class="gradient-bg text-white px-4 py-6">
+            <div class="flex items-center gap-4 mb-4">
+                <button onclick="closeReport()" class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1 class="text-xl font-bold">训练报告</h1>
+            </div>
+            
+            <!-- Score Circle -->
+            <div class="flex flex-col items-center py-6">
+                <div class="w-32 h-32 rounded-full bg-white/20 flex flex-col items-center justify-center mb-4">
+                    <span class="text-5xl font-bold">78</span>
+                    <span class="text-sm opacity-80">综合得分</span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="px-3 py-1 bg-white/20 rounded-full text-sm">评级 A</span>
+                    <span class="px-3 py-1 bg-white/20 rounded-full text-sm">超过 65% 用户</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Content -->
+        <div class="px-4 py-6 space-y-6">
+            <!-- Dimensions -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-4">能力分析</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">专业度</span>
+                            <span class="font-bold text-gray-800">82</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full" style="width: 82%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">共情力</span>
+                            <span class="font-bold text-gray-800">75</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">转化力</span>
+                            <span class="font-bold text-gray-800">68</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full" style="width: 68%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-600">合规性</span>
+                            <span class="font-bold text-gray-800">85</span>
+                        </div>
+                        <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Highlights -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-4">✨ 亮点</h3>
+                <ul class="space-y-2 text-gray-600">
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>专业术语使用准确，体现了良好的产品知识</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-check-circle text-green-500 mt-1"></i>
+                        <span>善于使用共情语言，让患者感到被理解</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Improvements -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm">
+                <h3 class="font-bold text-gray-800 mb-4">⚡ 改进建议</h3>
+                <ul class="space-y-2 text-gray-600">
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                        <span>在合适时机提出明确的下一步行动</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                        <span>多练习价格异议处理话术</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="h-20"></div>
+    </div>
+
     <script>
-        const API_BASE = 'http://localhost:8000';
+        const API_BASE = window.location.origin;
         let currentUser = 'user_001';
-        let currentScene = null;
-        
-        function showPage(page) {
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            if (page === 'home') {
-                document.getElementById('home-page').style.display = 'block';
-            } else if (page === 'chat') {
-                document.getElementById('chat-page').style.display = 'block';
-                document.getElementById('chat-page').classList.remove('chat-page');
-            } else if (page === 'report') {
-                document.getElementById('report-page').style.display = 'block';
-                document.getElementById('report-page').classList.remove('report-page');
-            }
+
+        function showChat() {
+            document.getElementById('chat-modal').classList.remove('hidden');
         }
-        
+
+        function closeChat() {
+            document.getElementById('chat-modal').classList.add('hidden');
+        }
+
         function showReport() {
-            showPage('report');
+            document.getElementById('report-modal').classList.remove('hidden');
         }
-        
-        async function quickStart() {
-            await startScene('auto');
+
+        function closeReport() {
+            document.getElementById('report-modal').classList.add('hidden');
         }
-        
+
+        function quickStart() {
+            startScene('auto');
+        }
+
         async function startScene(project) {
-            currentScene = project;
-            showPage('chat');
+            showChat();
+            
+            // Add system message
+            addSystemMessage(`正在为你准备【${project === 'auto' ? '个性化推荐' : project}】训练场景...`);
             
             try {
-                const response = await fetch(`${API_BASE}/training/start`, {
+                const response = await fetch(`${API_BASE}/api/training/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -482,31 +434,33 @@
                 const data = await response.json();
                 
                 if (data.response) {
-                    addMessage('ai', data.response);
+                    addPatientMessage(data.response);
                 }
             } catch (error) {
-                console.error('Error:', error);
-                // 模拟场景开始
-                addMessage('ai', `好的！为你准备【${project}】训练场景\n\n👤 患者角色：\n姓名：李女士\n年龄：32岁\n诉求：法令纹明显\n性格：犹豫型\n\n💬 患者说：\n"你好，我想咨询一下${project}，这个安全吗？"\n\n请输入你的回复 👇`);
+                // Demo mode
+                setTimeout(() => {
+                    addPatientMessage(`好的！为你准备【${project}】训练场景\n\n👤 患者角色：\n姓名：李女士\n年龄：32岁\n诉求：法令纹明显\n性格：犹豫型\n\n💬 患者说：\n"你好，我想咨询一下${project}，这个安全吗？"`);
+                }, 1000);
             }
         }
-        
+
         function handleEnter(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
+            if (event.key === 'Enter') sendMessage();
         }
-        
+
         async function sendMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             if (!message) return;
             
             input.value = '';
-            addMessage('user', message);
+            addUserMessage(message);
+            
+            // Show typing indicator
+            showTypingIndicator();
             
             try {
-                const response = await fetch(`${API_BASE}/chat`, {
+                const response = await fetch(`${API_BASE}/api/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -517,12 +471,12 @@
                 });
                 const data = await response.json();
                 
+                hideTypingIndicator();
                 if (data.response) {
-                    setTimeout(() => addMessage('ai', data.response), 500);
+                    addPatientMessage(data.response);
                 }
             } catch (error) {
-                console.error('Error:', error);
-                // 模拟回复
+                hideTypingIndicator();
                 setTimeout(() => {
                     const replies = [
                         "那大概要多少钱？效果能维持多久？",
@@ -530,26 +484,84 @@
                         "我再考虑考虑，要回去跟家人商量一下。",
                         "你们这用的什么品牌？医生经验丰富吗？"
                     ];
-                    const randomReply = replies[Math.floor(Math.random() * replies.length)];
-                    addMessage('ai', randomReply);
-                }, 1000);
+                    addPatientMessage(replies[Math.floor(Math.random() * replies.length)]);
+                }, 500);
             }
         }
-        
-        function addMessage(role, content) {
+
+        function addUserMessage(content) {
             const container = document.getElementById('chat-messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${role}`;
-            messageDiv.innerHTML = `
-                <div class="message-avatar">${role === 'ai' ? '👩' : '👨‍⚕️'}</div>
-                <div class="message-content">${content.replace(/\n/g, '<br>')}</div>
+            const div = document.createElement('div');
+            div.className = 'flex gap-3 message-bubble justify-end';
+            div.innerHTML = `
+                <div class="flex-1 flex justify-end">
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-2xl rounded-tr-sm p-4 max-w-[80%]">
+                        <p>${content.replace(/\n/g, '<br>')}</p>
+                    </div>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
+                    咨
+                </div>
             `;
-            container.appendChild(messageDiv);
+            container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         }
-        
-        // 初始化显示首页
-        showPage('home');
+
+        function addPatientMessage(content) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'flex gap-3 message-bubble';
+            div.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                    王
+                </div>
+                <div class="flex-1">
+                    <div class="bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm max-w-[80%]">
+                        <p class="text-gray-700">${content.replace(/\n/g, '<br>')}</p>
+                    </div>
+                    <span class="text-xs text-gray-400 mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addSystemMessage(content) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'flex justify-center my-4';
+            div.innerHTML = `
+                <span class="bg-gray-200 text-gray-600 px-4 py-2 rounded-full text-sm">${content}</span>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.id = 'typing-indicator';
+            div.className = 'flex gap-3';
+            div.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                    王
+                </div>
+                <div class="bg-white rounded-2xl rounded-tl-sm p-4 shadow-sm">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.remove();
+        }
     </script>
 </body>
 </html>
