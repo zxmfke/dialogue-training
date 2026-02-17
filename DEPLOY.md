@@ -1,179 +1,180 @@
-# 🚀 部署指南
+# 部署指南
 
-## 方法一：ngrok 内网穿透（推荐快速体验，5分钟）
+## 🚀 方案一：Render 部署（推荐）
 
-### 1. 注册 ngrok
-- 访问 https://dashboard.ngrok.com/signup
-- 用 GitHub 账号一键登录
+### 自动部署（推荐）
+1. Fork 本仓库到你的 GitHub 账户
+2. 在 Render 创建 Web Service，选择 GitHub 仓库
+3. 配置：
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn src.api.main:app --host 0.0.0.0 --port $PORT`
+4. 点击 Create，等待部署完成
 
-### 2. 获取 Token
-- 登录后访问 https://dashboard.ngrok.com/get-started/your-authtoken
-- 复制你的 authtoken
-
-### 3. 配置并启动
-```bash
-cd "C:\coding\话术演练场"
-
-# 配置 token（只需一次）
-python scripts/setup_ngrok.py YOUR_NGROK_TOKEN
-
-# 启动服务
-python scripts/start_with_ngrok.py
-```
-
-### 4. 手机访问
-运行后会显示类似：
-```
-📱 手机/外网访问地址：
-   https://xxxx.ngrok-free.app
-```
-直接用手机浏览器打开即可！
+### 手动部署
+1. 访问 https://dashboard.render.com
+2. New + → Web Service
+3. 选择 GitHub 仓库 `zxmfke/dialogue-training`
+4. 配置如上，点击 Create
 
 ---
 
-## 方法二：Render 免费托管（推荐长期运行）
+## 🚀 方案二：腾讯云服务器部署（一键脚本）
 
-### 1. 推送代码到 GitHub
+### 要求
+- 腾讯云服务器（1核2G以上）
+- Ubuntu 20.04/22.04 或 CentOS 8
+- 开放 80 和 8000 端口
+
+### 部署步骤
+
 ```bash
-# 在 GitHub 创建仓库后
-git remote add origin https://github.com/你的用户名/dialogue-training.git
-git branch -M main
-git push -u origin main
-```
-
-### 2. 部署到 Render
-1. 访问 https://render.com
-2. 用 GitHub 登录
-3. 点击 "New Web Service"
-4. 选择你的 GitHub 仓库 `dialogue-training`
-5. 配置：
-   - Name: dialogue-training
-   - Runtime: Python 3
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `uvicorn src.api.main:app --host 0.0.0.0 --port $PORT`
-6. 点击 "Create Web Service"
-
-### 3. 获取域名
-Render 会自动分配域名：`https://dialogue-training-xxx.onrender.com`
-
----
-
-## 方法三：云服务器（正式运营）
-
-### 1. 购买服务器
-推荐阿里云/腾讯云/华为云，最低配置（1核2G）约 50元/月
-
-### 2. 连接服务器并部署
-```bash
-# SSH 连接服务器
+# 1. SSH 连接服务器
 ssh root@你的服务器IP
 
-# 安装依赖
-apt update
-apt install python3-pip git nginx -y
+# 2. 下载并运行部署脚本
+curl -fsSL https://raw.githubusercontent.com/zxmfke/dialogue-training/main/deploy.sh | bash
 
-# 拉取代码
-git clone https://github.com/你的用户名/dialogue-training.git
+# 或者手动执行
+apt-get update && apt-get install -y git
+mkdir -p /opt && cd /opt
+git clone https://github.com/zxmfke/dialogue-training.git
 cd dialogue-training
-pip3 install -r requirements.txt
-
-# 后台运行
-nohup python3 scripts/start_api.py > app.log 2>&1 &
+bash deploy.sh
 ```
 
-### 3. 配置 Nginx 反向代理
+### 部署后管理
+
 ```bash
-# 编辑配置文件
-nano /etc/nginx/sites-available/dialogue-training
-```
+# 查看服务状态
+systemctl status dialogue-training
 
-写入：
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;  # 你的域名
-    
-    location / {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-```
+# 查看日志
+journalctl -u dialogue-training -f
 
-启用配置：
-```bash
-ln -s /etc/nginx/sites-available/dialogue-training /etc/nginx/sites-enabled/
-nginx -t
-systemctl restart nginx
-```
+# 重启服务
+systemctl restart dialogue-training
 
-### 4. 配置域名解析
-- 在域名服务商添加 A 记录指向服务器 IP
-- 访问 `http://your-domain.com`
+# 停止服务
+systemctl stop dialogue-training
+```
 
 ---
 
-## 🔐 安全建议
+## 🐳 方案三：Docker 部署
 
-1. **修改默认配置**
-   - 编辑 `config/agent.yaml` 修改敏感词库
-   - 设置强密码（如添加登录功能）
+```bash
+# 1. 安装 Docker
+curl -fsSL https://get.docker.com | sh
 
-2. **HTTPS 配置**
-   - 云服务器：使用 Let's Encrypt 免费 SSL
-   - Render：自动提供 HTTPS
-   - ngrok：自动提供 HTTPS
+# 2. 克隆代码
+git clone https://github.com/zxmfke/dialogue-training.git
+cd dialogue-training
 
-3. **数据备份**
-   ```bash
-   # 定期备份数据目录
-   tar -czvf backup-$(date +%Y%m%d).tar.gz data/
-   ```
+# 3. 启动服务
+docker-compose up -d
+
+# 4. 查看日志
+docker-compose logs -f
+```
 
 ---
 
-## 📱 手机访问测试
+## 🔐 配置 HTTPS（推荐）
 
-部署成功后，手机浏览器访问：
-- 咨询师端：`https://你的域名/`
-- 管理后台：`https://你的域名/admin`
+### 使用 Let's Encrypt
 
-建议添加到手机桌面（像 App 一样使用）：
-- iOS: Safari → 分享 → "添加到主屏幕"
-- Android: Chrome → 菜单 → "添加到主屏幕"
+```bash
+# 安装 Certbot
+apt-get install certbot python3-certbot-nginx
+
+# 申请证书
+certbot --nginx -d your-domain.com
+
+# 自动续期
+certbot renew --dry-run
+```
+
+---
+
+## 📱 访问应用
+
+部署成功后访问：
+- 咨询师端: `http://你的服务器IP/` 或 `https://your-domain.com/`
+- 管理后台: `http://你的服务器IP/admin` 或 `https://your-domain.com/admin`
+
+手机访问时建议添加到主屏幕：
+- iOS: Safari → 分享 → 添加到主屏幕
+- Android: Chrome → 菜单 → 添加到主屏幕
 
 ---
 
 ## 🆘 常见问题
 
-**Q: ngrok 启动失败？**  
-A: 需要先运行 `python scripts/setup_ngrok.py YOUR_TOKEN` 配置 token
+### Q: Render 部署失败？
+A: 检查 requirements.txt 格式，确保没有 sqlite3-python（这是 Python 标准库）
 
-**Q: 手机访问慢？**  
-A: ngrok 免费版在国外，建议用 Render 或国内云服务器
+### Q: 服务器部署后无法访问？
+A: 检查防火墙设置：
+```bash
+ufw status
+ufw allow 80/tcp
+ufw allow 8000/tcp
+```
 
-**Q: 如何更新代码？**  
-A: 修改后运行 `git add . && git commit -m "xxx" && git push`，Render 会自动重新部署
+### Q: 如何更新代码？
+A: 
+```bash
+cd /opt/dialogue-training
+git pull
+systemctl restart dialogue-training
+```
+
+### Q: 如何备份数据？
+A: 
+```bash
+# 备份数据目录
+tar -czvf backup-$(date +%Y%m%d).tar.gz /opt/dialogue-training/data/
+```
 
 ---
 
-## 📝 版本管理
+## 📝 环境变量配置
 
-日常使用 Git：
+创建 `.env` 文件：
+
 ```bash
-# 查看修改
-git status
+# API 配置
+OPENAI_API_KEY=your_api_key_here
+MODEL=gpt-4
 
-# 提交修改
-git add .
-git commit -m "描述这次修改"
-git push origin main
+# 安全配置
+SECRET_KEY=your_secret_key
+ALLOWED_HOSTS=*
 
-# 查看历史
-git log --oneline
-
-# 回滚到某个版本
-git reset --hard 版本号
+# 数据库（可选）
+DATABASE_URL=sqlite:///data/app.db
 ```
+
+---
+
+## 🎯 生产环境优化
+
+1. **使用 Gunicorn + Uvicorn**
+   ```bash
+   pip install gunicorn
+   gunicorn src.api.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+   ```
+
+2. **配置 Redis 缓存**（可选）
+
+3. **使用 CDN 加速静态资源**
+
+4. **配置监控告警**
+   ```bash
+   # 安装监控
+   pip install prometheus-client
+   ```
+
+---
+
+需要帮助？请提交 Issue 或联系开发者。

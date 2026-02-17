@@ -1,28 +1,25 @@
 # 话术演练场 - 依赖包
 
 # Web 框架
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
 
 # 数据模型
-pydantic==2.5.0
+pydantic>=2.0.0
 
 # 配置解析
-pyyaml==6.0.1
+pyyaml>=6.0.0
 
 # HTTP 请求
-requests==2.31.0
-
-# 数据库
-sqlite3-python
+requests>=2.31.0
 
 # 文档解析（知识库）
-PyPDF2==3.0.1
-python-docx==1.1.0
+PyPDF2>=3.0.0
+python-docx>=1.1.0
 
 # 工具
-python-multipart==0.0.6
+python-multipart>=0.0.6
 
 # 开发依赖
-pytest==7.4.3
-pytest-asyncio==0.21.1
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
