@@ -1,0 +1,103 @@
+# OpenClaw Agent 配置
+name: "话术教练 Agent"
+description: "医院咨询师话术陪练与提升助手，支持医美/口腔/体检科"
+version: "1.0.0"
+
+# LLM 配置
+llm:
+  provider: "openai"  # 可选: openai, anthropic, local
+  model: "gpt-4"
+  temperature: 0.7
+  max_tokens: 4096
+
+# Agent 能力
+capabilities:
+  - roleplay_dialogue      # 角色扮演对话
+  - multi_dimension_eval   # 多维度评估
+  - knowledge_management   # 知识库管理
+  - personalized_learning  # 个性化学习
+  - self_evolution         # 自我进化
+
+# 工具配置
+tools:
+  - name: read_knowledge
+    description: "读取医院知识库文档，提取项目信息、话术、FAQ"
+    
+  - name: evaluate_dialogue
+    description: "评估对话质量，生成多维度评分和改进建议"
+    
+  - name: generate_scenario
+    description: "基于知识库生成训练场景和患者角色"
+    
+  - name: send_notification
+    description: "发送提醒通知到企业微信或个人"
+    
+  - name: export_report
+    description: "导出个人或团队培训报告"
+
+# 评估维度配置
+evaluation:
+  dimensions:
+    - name: "专业度"
+      weight: 25
+      description: "产品知识准确性、术语使用规范"
+      
+    - name: "共情力"
+      weight: 25
+      description: "理解患者顾虑、情绪安抚能力"
+      
+    - name: "转化力"
+      weight: 25
+      description: "引导下一步、促成预约/成交"
+      
+    - name: "合规性"
+      weight: 25
+      description: "避免违禁词汇，符合医疗广告法"
+
+# 敏感词库（医疗广告法禁用）
+sensitive_words:
+  - "最好"
+  - "第一"
+  - "根治"
+  - "特效"
+  - "绝对"
+  - "100%"
+  - "保证治愈"
+  - "无副作用"
+  - "祖传秘方"
+  - "最新技术"
+
+# 数据存储
+storage:
+  type: "sqlite"  # 可选: sqlite, json
+  path: "./data/training.db"
+
+# 知识库路径
+knowledge_base:
+  path: "./src/knowledge"
+  auto_sync: true
+  sync_interval: 3600  # 秒
+
+# 定时任务
+scheduled_tasks:
+  - name: "analyze_weaknesses"
+    schedule: "0 0 * * *"  # 每天凌晨
+    description: "分析用户薄弱点，优化推荐"
+    
+  - name: "send_reminders"
+    schedule: "0 9 * * *"  # 每天上午9点
+    description: "给未练习用户发送提醒"
+    
+  - name: "learn_from_excellent"
+    schedule: "0 12 * * *"  # 每天中午
+    description: "学习优秀对话，更新话术库"
+    
+  - name: "generate_daily_report"
+    schedule: "0 20 * * *"  # 每天晚上8点
+    description: "生成团队日报"
+
+# 通信渠道
+channels:
+  - wecom       # 企业微信
+  - wechat      # 微信小程序
+  - webhook     # Webhook 接口
